@@ -1,0 +1,73 @@
+<robot name="bolt" xmlns:xacro="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface">
+  <xacro:property name="color_name" value="grey" />
+  <xacro:property name="color" value="0.8 0.8 0.8" />
+  <xacro:property name="opacity" value="1.0" />
+  <xacro:property name="new_leg" value="true" />
+  <xacro:property name="has_passive_ankle" value="false" />
+
+  <link name="base_link"/>
+  <joint name="base_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="body"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <link name="body">
+      <inertial>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <mass value="0.61436936"/>
+          <inertia ixx="0.00578574" ixy="0.0" ixz="0.0"
+                                    iyy="0.01938108" iyz="0.0"
+                                                    izz="0.02476124"
+          />
+      </inertial>
+      <visual name="body_visual">
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <mesh filename="package://bolt_description/meshes/bolt_body.stl"/>
+          </geometry>
+          <material name="${color_name}">
+              <color rgba="${color} ${opacity}"/>
+          </material>
+      </visual>
+      <collision name="body_collision">
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <mesh filename="package://bolt_description/meshes/bolt_body.stl"/>
+          </geometry>
+          <material name="${color_name}">
+              <color rgba="${color} ${opacity}"/>
+          </material>
+      </collision>
+  </link>
+
+  <xacro:include filename="leg.xacro"/>
+  <xacro:leg
+      prefix="FL"
+      is_front="true"
+      is_right="false"
+      has_side_motion="true"
+      color_name="${color_name}"
+      color="${color}"
+      opacity="${opacity}"
+      new_leg="${new_leg}"
+      has_passive_ankle="${has_passive_ankle}"/>
+  <xacro:leg
+      prefix="FR"
+      is_front="true"
+      is_right="true"
+      has_side_motion="true"
+      color_name="${color_name}"
+      color="${color}"
+      opacity="${opacity}"
+      new_leg="${new_leg}"
+      has_passive_ankle="${has_passive_ankle}"/>
+
+  <mujoco>
+      <!-- TODO: fix this path -->
+      <compiler 
+      meshdir="/home/ws/src/bolt_description/resource/meshes"
+      discardvisual="false" />
+  </mujoco>
+</robot>
