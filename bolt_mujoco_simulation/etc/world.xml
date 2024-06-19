@@ -1,0 +1,7 @@
+<mujoco model="bolt">
+  <include file="shared.xml"></include>
+  <worldbody>
+      <include file="floorplane.xml"></include>
+      <include file="robot.xml"></include>
+  </worldbody>
+</mujoco>

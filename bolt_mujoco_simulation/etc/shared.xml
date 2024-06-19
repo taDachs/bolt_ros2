@@ -1,0 +1,16 @@
+<mujoco>
+  <compiler angle="radian" meshdir="../resource/meshes/"/>
+  <asset>
+    <mesh name="bolt_body" file="bolt_body.stl"/>
+    <mesh name="bolt_hip_fe_left_side" file="bolt_hip_fe_left_side.stl"/>
+    <mesh name="upper_leg_200mm_left_side" file="upper_leg_200mm_left_side.stl"/>
+    <mesh name="lower_leg_200mm_left_side" file="lower_leg_200mm_left_side.stl"/>
+    <mesh name="bolt_foot" file="bolt_foot.stl"/>
+    <mesh name="bolt_hip_fe_right_side" file="bolt_hip_fe_right_side.stl"/>
+    <mesh name="upper_leg_200mm_right_side" file="upper_leg_200mm_right_side.stl"/>
+    <mesh name="lower_leg_200mm_right_side" file="lower_leg_200mm_right_side.stl"/>
+
+    <texture builtin="checker" height="512" name="texplane" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" type="2d" width="512"/>
+    <material name="floorplane" reflectance="0.5" texrepeat="1 1" texture="texplane" texuniform="true"/>
+  </asset>
+</mujoco>
