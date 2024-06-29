@@ -5,6 +5,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <map>
 
 #include <GLFW/glfw3.h>
 #include <mujoco/mujoco.h>
@@ -46,13 +47,13 @@ public:
 
 
   // Buffers for data exchange with ROS2-control
-  std::vector<double> pos_cmd;
-  std::vector<double> vel_cmd;
-  std::vector<double> pos_state;
-  std::vector<double> vel_state;
-  std::vector<double> eff_state;
-  std::vector<double> stiff; // Proportional gain
-  std::vector<double> damp;  // Derivative gain
+  std::map<std::string, double> pos_cmd;
+  std::map<std::string, double> vel_cmd;
+  std::map<std::string, double> pos_state;
+  std::map<std::string, double> vel_state;
+  std::map<std::string, double> eff_state;
+  std::map<std::string, double> stiff; // Proportional gain
+  std::map<std::string, double> damp;  // Derivative gain
 
   // Safety guards for buffers
   std::mutex state_mutex;
@@ -81,9 +82,9 @@ public:
   void scrollCBImpl(GLFWwindow* window, double xoffset, double yoffset);
 
   // Non-blocking
-  void read(std::vector<double> &pos, std::vector<double> &vel,
-            std::vector<double> &eff);
-  void write(const std::vector<double> &pos, const std::vector<double> &vel,
-             const std::vector<double> &stiff, const std::vector<double> &damp);
+  void read(std::map<std::string, double> &pos, std::map<std::string, double> &vel,
+            std::map<std::string, double> &eff);
+  void write(const std::map<std::string, double> &pos, const std::map<std::string, double> &vel,
+             const std::map<std::string, double> &stiff, const std::map<std::string, double> &damp);
 };
 } // namespace bolt_mujoco_simulation

@@ -35,27 +35,15 @@ Simulator::on_init(const hardware_interface::HardwareInfo &info) {
   m_simulation = std::thread(MuJoCoSimulator::simulate, m_mujoco_model);
   m_simulation.detach();
 
-  m_positions.resize(info_.joints.size(),
-                     std::numeric_limits<double>::quiet_NaN());
-  m_velocities.resize(info_.joints.size(),
-                      std::numeric_limits<double>::quiet_NaN());
-  m_efforts.resize(info_.joints.size(),
-                   std::numeric_limits<double>::quiet_NaN());
-  m_position_commands.resize(info_.joints.size(),
-                             std::numeric_limits<double>::quiet_NaN());
-  m_velocity_commands.resize(info_.joints.size(), 0.0);
-
-  // Default gains
-  m_stiffness.resize(info_.joints.size(), 0);
-  m_damping.resize(info_.joints.size(), 0);
-
-  // Initialize joint gains for the simulator
-  for (size_t i = 0; i < info_.joints.size(); ++i) {
-    m_stiffness[i] = std::stod(info_.joints[i].parameters.at("p"));
-    m_damping[i] = std::stod(info_.joints[i].parameters.at("d"));
-  }
-
   for (const hardware_interface::ComponentInfo &joint : info_.joints) {
+    m_positions[joint.name] = std::numeric_limits<double>::quiet_NaN();
+    m_velocities[joint.name] = std::numeric_limits<double>::quiet_NaN();
+    m_efforts[joint.name] = std::numeric_limits<double>::quiet_NaN();
+    m_position_commands[joint.name] = std::numeric_limits<double>::quiet_NaN();
+    m_velocity_commands[joint.name] = 0.0;
+    m_stiffness[joint.name] = std::stod(joint.parameters.at("p"));
+    m_damping[joint.name] = std::stod(joint.parameters.at("d"));
+
     if (joint.command_interfaces.size() != 2) {
       RCLCPP_ERROR(rclcpp::get_logger("Simulator"),
                    "Joint '%s' needs two possible command interfaces.",
@@ -102,15 +90,15 @@ Simulator::on_init(const hardware_interface::HardwareInfo &info) {
 std::vector<hardware_interface::StateInterface>
 Simulator::export_state_interfaces() {
   std::vector<hardware_interface::StateInterface> state_interfaces;
-  for (std::size_t i = 0; i < info_.joints.size(); i++) {
+  for (const auto& joint : info_.joints) {
     state_interfaces.emplace_back(hardware_interface::StateInterface(
-        info_.joints[i].name, hardware_interface::HW_IF_POSITION,
-        &m_positions[i]));
+        joint.name, hardware_interface::HW_IF_POSITION,
+        &m_positions[joint.name]));
     state_interfaces.emplace_back(hardware_interface::StateInterface(
-        info_.joints[i].name, hardware_interface::HW_IF_VELOCITY,
-        &m_velocities[i]));
+        joint.name, hardware_interface::HW_IF_VELOCITY,
+        &m_velocities[joint.name]));
     state_interfaces.emplace_back(hardware_interface::StateInterface(
-        info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &m_efforts[i]));
+        joint.name, hardware_interface::HW_IF_EFFORT, &m_efforts[joint.name]));
   }
 
   return state_interfaces;
@@ -119,13 +107,13 @@ Simulator::export_state_interfaces() {
 std::vector<hardware_interface::CommandInterface>
 Simulator::export_command_interfaces() {
   std::vector<hardware_interface::CommandInterface> command_interfaces;
-  for (std::size_t i = 0; i < info_.joints.size(); i++) {
+  for (const auto& joint : info_.joints) {
     command_interfaces.emplace_back(hardware_interface::CommandInterface(
-        info_.joints[i].name, hardware_interface::HW_IF_POSITION,
-        &m_position_commands[i]));
+        joint.name, hardware_interface::HW_IF_POSITION,
+        &m_position_commands[joint.name]));
     command_interfaces.emplace_back(hardware_interface::CommandInterface(
-        info_.joints[i].name, hardware_interface::HW_IF_VELOCITY,
-        &m_velocity_commands[i]));
+        joint.name, hardware_interface::HW_IF_VELOCITY,
+        &m_velocity_commands[joint.name]));
   }
 
   return command_interfaces;
@@ -147,7 +135,7 @@ Simulator::read([[maybe_unused]] const rclcpp::Time &time,
   // Start with the current positions as safe default, but let active
   // controllers overrride them in each cycle.
   if (std::any_of(m_position_commands.begin(), m_position_commands.end(),
-                  [](double i) { return std::isnan(i); })) {
+                  [](auto v) { return std::isnan(v.second); })) {
     m_position_commands = m_positions;
   }
 
