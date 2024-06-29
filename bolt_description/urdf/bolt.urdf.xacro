@@ -35,11 +35,11 @@
 
   <xacro:include filename="$(find bolt_description)/urdf/joint.xacro"/>
   <ros2_control name="bolt_mujoco_simulation" type="system">
-    <xacro:joint_interface name="FR_HAA" p="500" d="0.1" />
+    <xacro:joint_interface name="FR_HAA" p="1" d="0.1" />
     <xacro:joint_interface name="FR_HFE" p="1" d="0.1" />
     <xacro:joint_interface name="FR_KFE" p="1" d="0.1" />
     <!-- <xacro:joint_interface name="FR_ANKLE" p="10" d="0.1" /> -->
-    <xacro:joint_interface name="FL_HAA" p="500" d="0.1" />
+    <xacro:joint_interface name="FL_HAA" p="1" d="0.1" />
     <xacro:joint_interface name="FL_HFE" p="1" d="0.1" />
     <xacro:joint_interface name="FL_KFE" p="1" d="0.1" />
     <!-- <xacro:joint_interface name="FL_ANKLE" p="10" d="0.1" /> -->
