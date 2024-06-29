@@ -56,5 +56,6 @@ class Simulator : public hardware_interface::SystemInterface {
 
   // Parameters
   std::string m_mujoco_model;
+  std::string m_mesh_dir;
 };
 }  // namespace bolt_mujoco_simulation

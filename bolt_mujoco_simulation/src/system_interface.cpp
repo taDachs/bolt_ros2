@@ -29,7 +29,9 @@ Simulator::CallbackReturn Simulator::on_init(
   // Let the thread's destructor clean-up all resources
   // once users close the simulation window.
   m_mujoco_model = info_.hardware_parameters["mujoco_model"];
-  m_simulation = std::thread(MuJoCoSimulator::simulate, m_mujoco_model);
+  m_mesh_dir     = info_.hardware_parameters["mesh_directory"];
+
+  m_simulation = std::thread(MuJoCoSimulator::simulate, m_mujoco_model, m_mesh_dir);
   m_simulation.detach();
 
   for (const hardware_interface::ComponentInfo &joint : info_.joints) {

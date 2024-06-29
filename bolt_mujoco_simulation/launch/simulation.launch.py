@@ -25,6 +25,8 @@ def generate_launch_description():
                 ]
             ),
             " ",
+            "sim:=true",
+            " ",
             "mujoco_model:=",
             PathJoinSubstitution(
                 [
@@ -33,6 +35,9 @@ def generate_launch_description():
                     "world.xml",
                 ]
             ),
+            " ",
+            "mesh_directory:=",
+            PathJoinSubstitution([FindPackageShare("bolt_description"), "meshes"]),
         ]
     )
     robot_description = {
@@ -57,8 +62,9 @@ def generate_launch_description():
         package="controller_manager",
         executable="ros2_control_node",
         # prefix="gdbserver localhost:3000",
-        emulate_tty=True,
-        parameters=[robot_controllers],
+        parameters=[
+            robot_controllers,
+        ],
         output="both",
         remappings=[
             ("~/robot_description", "/robot_description"),

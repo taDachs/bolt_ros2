@@ -1,5 +1,6 @@
 #include "bolt_mujoco_simulation/mujoco_simulator.hpp"
 
+#include <filesystem>
 #include <iostream>
 #include <memory>
 
@@ -124,20 +125,32 @@ void MuJoCoSimulator::controlCBImpl([[maybe_unused]] const mjModel *m,
   command_mutex.unlock();
 }
 
-int MuJoCoSimulator::simulate(const std::string &model_xml) {
-  return getInstance().simulateImpl(model_xml);
+int MuJoCoSimulator::simulate(const std::string &model_xml, const std::string &mesh_dir) {
+  return getInstance().simulateImpl(model_xml, mesh_dir);
 }
 
-int MuJoCoSimulator::simulateImpl(const std::string &model_xml) {
+int MuJoCoSimulator::simulateImpl(const std::string &model_xml, const std::string &mesh_dir) {
   // Make sure that the ROS2-control system_interface only gets valid data in
   // read(). We lock until we are done with simulation setup.
   state_mutex.lock();
 
   node = rclcpp::Node::make_shared("mujoco_simulator");
 
+  auto mj_vfs = std::make_unique<mjVFS>();
+  mj_defaultVFS(mj_vfs.get());
+
+  for (const auto& entry : std::filesystem::directory_iterator(mesh_dir))
+  {
+    mj_addFileVFS(mj_vfs.get(),
+                  // Append a forward slash for MuJoCo if non-existent
+                  (std::string(mesh_dir).back() == '/') ? mesh_dir.c_str()
+                                                        : std::string(mesh_dir + '/').c_str(),
+                  entry.path().filename().c_str());
+  }
+
   // load and compile model
   char error[1000] = "Could not load binary model";
-  m = mj_loadXML(model_xml.c_str(), nullptr, error, 1000);
+  m                = mj_loadXML(model_xml.c_str(), mj_vfs.get(), error, 1000);
   if (!m) {
     mju_error_s("Load model error: %s", error);
     return 1;
