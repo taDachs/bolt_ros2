@@ -45,6 +45,16 @@ Simulator::on_init(const hardware_interface::HardwareInfo &info) {
                              std::numeric_limits<double>::quiet_NaN());
   m_velocity_commands.resize(info_.joints.size(), 0.0);
 
+  // Default gains
+  m_stiffness.resize(info_.joints.size(), 0);
+  m_damping.resize(info_.joints.size(), 0);
+
+  // Initialize joint gains for the simulator
+  for (size_t i = 0; i < info_.joints.size(); ++i) {
+    m_stiffness[i] = std::stod(info_.joints[i].parameters.at("p"));
+    m_damping[i] = std::stod(info_.joints[i].parameters.at("d"));
+  }
+
   for (const hardware_interface::ComponentInfo &joint : info_.joints) {
     if (joint.command_interfaces.size() != 2) {
       RCLCPP_ERROR(rclcpp::get_logger("Simulator"),
@@ -147,7 +157,8 @@ Simulator::read([[maybe_unused]] const rclcpp::Time &time,
 Simulator::return_type
 Simulator::write([[maybe_unused]] const rclcpp::Time &time,
                  [[maybe_unused]] const rclcpp::Duration &period) {
-  MuJoCoSimulator::getInstance().write(m_position_commands, m_velocity_commands);
+  MuJoCoSimulator::getInstance().write(m_position_commands, m_velocity_commands,
+                                       m_stiffness, m_damping);
   return return_type::OK;
 }
 } // namespace bolt_mujoco_simulation
