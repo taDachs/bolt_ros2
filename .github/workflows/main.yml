@@ -1,0 +1,28 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  ros:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Install wget
+      run: sudo apt-get install -y wget
+
+    - name: Download MuJoCo
+      run: |
+        sudo mkdir -p /mujoco-3.1.6
+        wget https://github.com/google-deepmind/mujoco/releases/download/3.1.6/mujoco-3.1.6-linux-x86_64.tar.gz -O /tmp/mujoco.tar.gz
+        sudo tar -xzf /tmp/mujoco.tar.gz -C /mujoco-3.1.6 --strip-components=1
+        sudo chmod a+r -R /mujoco-3.1.6
+
+    - uses: ros-tooling/setup-ros@v0.7
+      with:
+        required-ros-distributions: humble
+    - uses: ros-tooling/action-ros-ci@v0.3
+      with:
+        target-ros2-distro: humble
+        extra-cmake-args: -DMUJOCO_DIR=/mujoco-3.1.6
