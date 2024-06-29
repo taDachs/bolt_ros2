@@ -11,12 +11,12 @@ controller_manager:
 position_controller:
   ros__parameters:
     joints:
-      - FR_HAA
-      - FR_HFA
-      - FR_KFE
-      # - FR_ANKLE
       - FL_HAA
       - FL_HFA
       - FL_KFE
       # - FL_ANKLE
+      - FR_HAA
+      - FR_HFA
+      - FR_KFE
+      # - FR_ANKLE
     interface_name: position

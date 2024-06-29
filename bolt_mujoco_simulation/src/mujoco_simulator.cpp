@@ -110,14 +110,18 @@ void MuJoCoSimulator::controlCBImpl([[maybe_unused]] const mjModel *m,
                                     mjData *d) {
   command_mutex.lock();
 
+  std::array<float, 6> stiff = {100, 10, 10, 100, 10, 10};
+  std::array<float, 6> damp = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+
   for (size_t i = 0; i < pos_cmd.size(); ++i) {
     // Joint-level impedance control
-    // d->ctrl[i] = stiff[i] * (pos_cmd[i] - d->qpos[i]) +            //
-    // stiffness
-    //              damp[i] * (vel_cmd[i] - d->actuator_velocity[i]); // damping
+    d->ctrl[i] = stiff[i] * (pos_cmd[i] - d->qpos[i]) +            // stiffness
+                 damp[i] * (vel_cmd[i] - d->actuator_velocity[i]); // damping
+                                                                   //
+    // if (i == 0) {
+    //   d->ctrl[i] = 300;
+    // }
     // d->ctrl[i] = 0;
-    d->ctrl[i] = 100.0 * (pos_cmd[i] - d->qpos[i]) +
-                 0.1 * (vel_cmd[i] - d->actuator_velocity[i]);
   }
   command_mutex.unlock();
 }

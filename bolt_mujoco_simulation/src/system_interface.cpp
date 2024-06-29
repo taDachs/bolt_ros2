@@ -45,8 +45,6 @@ Simulator::on_init(const hardware_interface::HardwareInfo &info) {
                              std::numeric_limits<double>::quiet_NaN());
   m_velocity_commands.resize(info_.joints.size(), 0.0);
 
-  // Default gains
-
   for (const hardware_interface::ComponentInfo &joint : info_.joints) {
     if (joint.command_interfaces.size() != 2) {
       RCLCPP_ERROR(rclcpp::get_logger("Simulator"),
