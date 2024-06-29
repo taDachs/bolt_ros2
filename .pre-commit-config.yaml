@@ -1,38 +1,46 @@
+---
 repos:
--   repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v14.0.1
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.5
     hooks:
-    -   id: clang-format
-        args: [-i, --style=Google]
--   repo: https://github.com/pre-commit/pre-commit-hooks
+      - id: clang-format
+        args: ['-fallback-style=none', '-i']
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.2.0
     hooks:
-    -   id: check-added-large-files
-    -   id: check-ast
-    -   id: check-executables-have-shebangs
-    -   id: check-json
-    -   id: check-merge-conflict
-    -   id: check-symlinks
-    -   id: check-toml
-    -   id: check-yaml
-    -   id: debug-statements
-    -   id: destroyed-symlinks
-    -   id: detect-private-key
-    -   id: end-of-file-fixer
-    -   id: fix-byte-order-marker
-    -   id: mixed-line-ending
-    -   id: trailing-whitespace
--   repo: https://github.com/psf/black
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-executables-have-shebangs
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-yaml
+      - id: debug-statements
+      - id: destroyed-symlinks
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+
+  # set the line length for black to 100
+  - repo: https://github.com/psf/black
     rev: 22.3.0
     hooks:
-    -   id: black
--   repo: https://github.com/PyCQA/flake8
-    rev: 4.0.1
+      - id: black
+        args: ['--line-length', '100']
+
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
     hooks:
-    -   id: flake8
-- repo: https://github.com/compilerla/conventional-pre-commit
-  rev: v3.2.0
-  hooks:
-    - id: conventional-pre-commit
-      stages: [commit-msg]
-      args: []
+    - id: flake8
+      args: ["--extend-ignore=E501"]
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.2.0
+    hooks:
+      - id: conventional-pre-commit
+        stages:
+          - commit-msg
+        args: []
