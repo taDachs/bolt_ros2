@@ -8,13 +8,7 @@ from launch.actions import RegisterEventHandler
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.parameter_descriptions import ParameterValue
-from ament_index_python.packages import get_package_share_directory
-from launch_ros.actions import Node
-import xacro
 from launch.event_handlers import OnProcessExit
-
-
-import os
 
 
 def generate_launch_description():
@@ -59,11 +53,6 @@ def generate_launch_description():
         ]
     )
 
-    gui = Node(
-        package="joint_state_publisher_gui",
-        executable="joint_state_publisher_gui",
-    )
-
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
@@ -79,13 +68,21 @@ def generate_launch_description():
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
+        arguments=[
+            "joint_state_broadcaster",
+            "--controller-manager",
+            "/controller_manager",
+        ],
     )
 
     robot_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["position_controller", "--controller-manager", "/controller_manager"],
+        arguments=[
+            "position_controller",
+            "--controller-manager",
+            "/controller_manager",
+        ],
     )
 
     delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = RegisterEventHandler(
@@ -99,7 +96,6 @@ def generate_launch_description():
             rsp,
             control_node,
             joint_state_broadcaster_spawner,
-            # gui,
             delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
         ]
     )

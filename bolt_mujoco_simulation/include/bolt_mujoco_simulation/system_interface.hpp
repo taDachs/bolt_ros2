@@ -12,45 +12,49 @@
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 
 namespace bolt_mujoco_simulation {
-  class Simulator : public hardware_interface::SystemInterface
-  {
-    public:
-      using return_type = hardware_interface::return_type;
-      using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+class Simulator : public hardware_interface::SystemInterface {
+ public:
+  using return_type = hardware_interface::return_type;
+  using CallbackReturn =
+      rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
-      RCLCPP_SHARED_PTR_DEFINITIONS(Simulator)
+  RCLCPP_SHARED_PTR_DEFINITIONS(Simulator)
 
-      CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
+  CallbackReturn on_init(const hardware_interface::HardwareInfo& info) override;
 
-      std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
+  std::vector<hardware_interface::StateInterface> export_state_interfaces()
+      override;
 
-      std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
+  std::vector<hardware_interface::CommandInterface> export_command_interfaces()
+      override;
 
-      return_type prepare_command_mode_switch(
-          const std::vector<std::string> & start_interfaces,
-          const std::vector<std::string> & stop_interfaces) override;
+  return_type prepare_command_mode_switch(
+      const std::vector<std::string>& start_interfaces,
+      const std::vector<std::string>& stop_interfaces) override;
 
-      return_type read(const rclcpp::Time & time, const rclcpp::Duration & period) override;
-      return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
+  return_type read(const rclcpp::Time& time,
+                   const rclcpp::Duration& period) override;
+  return_type write(const rclcpp::Time& time,
+                    const rclcpp::Duration& period) override;
 
-    private:
-      // Command buffers for the controllers
-      std::map<std::string, double> m_position_commands;
-      std::map<std::string, double> m_velocity_commands;
+ private:
+  // Command buffers for the controllers
+  std::map<std::string, double> m_position_commands;
+  std::map<std::string, double> m_velocity_commands;
 
-      // State buffers for the controllers
-      std::map<std::string, double> m_positions;
-      std::map<std::string, double> m_velocities;
-      std::map<std::string, double> m_efforts;
+  // State buffers for the controllers
+  std::map<std::string, double> m_positions;
+  std::map<std::string, double> m_velocities;
+  std::map<std::string, double> m_efforts;
 
-      // Anydrive gains
-      std::map<std::string, double> m_stiffness;
-      std::map<std::string, double> m_damping;
+  // Anydrive gains
+  std::map<std::string, double> m_stiffness;
+  std::map<std::string, double> m_damping;
 
-      // Run MuJoCo's solver in a separate thread
-      std::thread m_simulation;
+  // Run MuJoCo's solver in a separate thread
+  std::thread m_simulation;
 
-      // Parameters
-      std::string m_mujoco_model;
-  };
-}
+  // Parameters
+  std::string m_mujoco_model;
+};
+}  // namespace bolt_mujoco_simulation

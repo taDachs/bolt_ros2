@@ -50,7 +50,7 @@
 
   <mujoco>
     <!-- TODO: fix this path -->
-    <compiler 
+    <compiler
       meshdir="/home/ws/src/bolt_description/resource/meshes"
       discardvisual="false" />
   </mujoco>

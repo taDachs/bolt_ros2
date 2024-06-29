@@ -1,9 +1,5 @@
 #include "bolt_mujoco_simulation/system_interface.hpp"
 
-#include <memory>
-
-#include "bolt_mujoco_simulation/system_interface.hpp"
-
 #include <chrono>
 #include <cmath>
 #include <limits>
@@ -13,6 +9,7 @@
 #include <vector>
 
 #include "bolt_mujoco_simulation/mujoco_simulator.hpp"
+#include "bolt_mujoco_simulation/system_interface.hpp"
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
@@ -20,8 +17,8 @@
 #include "rclcpp/rclcpp.hpp"
 
 namespace bolt_mujoco_simulation {
-Simulator::CallbackReturn
-Simulator::on_init(const hardware_interface::HardwareInfo &info) {
+Simulator::CallbackReturn Simulator::on_init(
+    const hardware_interface::HardwareInfo &info) {
   // Keep an internal copy of the given configuration
   if (hardware_interface::SystemInterface::on_init(info) !=
       Simulator::CallbackReturn::SUCCESS) {
@@ -90,7 +87,7 @@ Simulator::on_init(const hardware_interface::HardwareInfo &info) {
 std::vector<hardware_interface::StateInterface>
 Simulator::export_state_interfaces() {
   std::vector<hardware_interface::StateInterface> state_interfaces;
-  for (const auto& joint : info_.joints) {
+  for (const auto &joint : info_.joints) {
     state_interfaces.emplace_back(hardware_interface::StateInterface(
         joint.name, hardware_interface::HW_IF_POSITION,
         &m_positions[joint.name]));
@@ -107,7 +104,7 @@ Simulator::export_state_interfaces() {
 std::vector<hardware_interface::CommandInterface>
 Simulator::export_command_interfaces() {
   std::vector<hardware_interface::CommandInterface> command_interfaces;
-  for (const auto& joint : info_.joints) {
+  for (const auto &joint : info_.joints) {
     command_interfaces.emplace_back(hardware_interface::CommandInterface(
         joint.name, hardware_interface::HW_IF_POSITION,
         &m_position_commands[joint.name]));
@@ -127,9 +124,9 @@ Simulator::return_type Simulator::prepare_command_mode_switch(
   return return_type::OK;
 }
 
-Simulator::return_type
-Simulator::read([[maybe_unused]] const rclcpp::Time &time,
-                [[maybe_unused]] const rclcpp::Duration &period) {
+Simulator::return_type Simulator::read(
+    [[maybe_unused]] const rclcpp::Time &time,
+    [[maybe_unused]] const rclcpp::Duration &period) {
   MuJoCoSimulator::getInstance().read(m_positions, m_velocities, m_efforts);
 
   // Start with the current positions as safe default, but let active
@@ -142,14 +139,14 @@ Simulator::read([[maybe_unused]] const rclcpp::Time &time,
   return return_type::OK;
 }
 
-Simulator::return_type
-Simulator::write([[maybe_unused]] const rclcpp::Time &time,
-                 [[maybe_unused]] const rclcpp::Duration &period) {
+Simulator::return_type Simulator::write(
+    [[maybe_unused]] const rclcpp::Time &time,
+    [[maybe_unused]] const rclcpp::Duration &period) {
   MuJoCoSimulator::getInstance().write(m_position_commands, m_velocity_commands,
                                        m_stiffness, m_damping);
   return return_type::OK;
 }
-} // namespace bolt_mujoco_simulation
+}  // namespace bolt_mujoco_simulation
 
 #include "pluginlib/class_list_macros.hpp"
 
