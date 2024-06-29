@@ -80,12 +80,15 @@ target_include_directories(mujoco_simulator PUBLIC
         ${GLFW_INCLUDE_DIRS}
 )
 
+ament_target_dependencies(mujoco_simulator PUBLIC
+  rclcpp
+)
+
 # X11 OpenGL: link with libmujoco210.so, libglew.so, libGL.so
 target_link_libraries(mujoco_simulator PUBLIC
         ${MUJOCO_LIBRARIES}
         ${GLFW_LIBRARIES}
 )
-
 
 
 #--------------------------------------------------------------------------------

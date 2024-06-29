@@ -129,6 +129,8 @@ int MuJoCoSimulator::simulateImpl(const std::string &model_xml) {
   // read(). We lock until we are done with simulation setup.
   state_mutex.lock();
 
+  node = rclcpp::Node::make_shared("mujoco_simulator");
+
   // load and compile model
   char error[1000] = "Could not load binary model";
   m = mj_loadXML(model_xml.c_str(), nullptr, error, 1000);
