@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <rclcpp/rclcpp.hpp>
+#include <memory>
 
 #include <GLFW/glfw3.h>
 #include <mujoco/mujoco.h>
@@ -58,6 +60,9 @@ public:
   // Safety guards for buffers
   std::mutex state_mutex;
   std::mutex command_mutex;
+
+  // ROS node
+  std::shared_ptr<rclcpp::Node> node;
 
   // Control input callback for the solver
   static void controlCB(const mjModel *m, mjData *d);
