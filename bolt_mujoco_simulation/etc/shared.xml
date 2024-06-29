@@ -1,5 +1,5 @@
 <mujoco>
-  <compiler angle="radian" meshdir="../resource/meshes/"/>
+  <compiler angle="radian" meshdir="../../bolt_description/meshes/"/>
   <asset>
     <mesh name="bolt_body" file="bolt_body.stl"/>
     <mesh name="bolt_hip_fe_left_side" file="bolt_hip_fe_left_side.stl"/>

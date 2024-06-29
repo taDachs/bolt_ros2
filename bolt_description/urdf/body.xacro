@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" name="bolt">
+  <joint name="base_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="body"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
+  <xacro:macro name="body">
+    <link name="body">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <mass value="0.61436936"/>
+        <inertia ixx="0.00578574" ixy="0.0" ixz="0.0"
+          iyy="0.01938108" iyz="0.0"
+          izz="0.02476124"
+          />
+      </inertial>
+      <visual name="body_visual">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://bolt_description/meshes/bolt_body.stl"/>
+        </geometry>
+        <material name="${color_name}">
+          <color rgba="${color} ${opacity}"/>
+        </material>
+      </visual>
+      <collision name="body_collision">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://bolt_description/meshes/bolt_body.stl"/>
+        </geometry>
+        <material name="${color_name}">
+          <color rgba="${color} ${opacity}"/>
+        </material>
+      </collision>
+    </link>
+  </xacro:macro>
+</robot>

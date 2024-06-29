@@ -1,6 +1,6 @@
 <mujoco>
-  <body name="robot" pos="0 0 0.5">
-    <freejoint name="root"/>
+  <body name="robot" pos="0 0 0.8">
+    <!-- <freejoint name="root"/> -->
     <geom name="body_visual" type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.8 0.8 0.8 1" mesh="bolt_body"/>
     <geom name="body_collision" type="mesh" rgba="0.8 0.8 0.8 1" mesh="bolt_body"/>
     <body name="FL_SHOULDER" pos="0 0.0636 0">

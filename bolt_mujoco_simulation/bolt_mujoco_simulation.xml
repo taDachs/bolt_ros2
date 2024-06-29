@@ -1,0 +1,9 @@
+<library path="bolt_mujoco_simulation">
+  <class name="bolt_mujoco_simulation/Simulator"
+         type="bolt_mujoco_simulation::Simulator"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+        A simulation environment for bolt
+    </description>
+  </class>
+</library>
