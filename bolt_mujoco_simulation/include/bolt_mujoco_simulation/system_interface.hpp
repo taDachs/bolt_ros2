@@ -12,9 +12,7 @@
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 
 namespace bolt_mujoco_simulation {
-  constexpr char HW_IF_STIFFNESS[] = "stiffness";
-  constexpr char HW_IF_DAMPING[] = "damping";
-  class Simulator : public hardware_interface::SystemInterface 
+  class Simulator : public hardware_interface::SystemInterface
   {
     public:
       using return_type = hardware_interface::return_type;
