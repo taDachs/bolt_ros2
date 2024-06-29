@@ -1,0 +1,17 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  ros:
+    runs-on: ubuntu-jammy
+    steps:
+    - uses: ros-tooling/setup-ros@v0.7
+      with:
+        required-ros-distributions: jazzy
+    - uses: ros-tooling/action-ros-ci@v0.3
+      with:
+        target-ros2-distro: humble
