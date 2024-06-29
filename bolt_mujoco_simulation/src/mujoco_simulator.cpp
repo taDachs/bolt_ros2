@@ -110,12 +110,13 @@ void MuJoCoSimulator::controlCBImpl([[maybe_unused]] const mjModel *m,
                                     mjData *d) {
   command_mutex.lock();
 
-  for (size_t i = 0; i < pos_cmd.size(); ++i) {
-    // Joint-level impedance control
-    d->ctrl[i] = stiff[i] * (pos_cmd[i] - d->qpos[i]) +            // stiffness
-                 damp[i] * (vel_cmd[i] - d->actuator_velocity[i]); // damping
-    // d->ctrl[i] = 0;
+  for (int i = 0; i < m->nq; ++i) {
+    // names is one big char array with multiple null terminated strings inside. Take the one that starts at the given address
+    std::string name = m->names + m->name_jntadr[i];;
+    d->ctrl[i] = stiff[name] * (pos_cmd[name] - d->qpos[i]) +            // stiffness
+                 damp[name] * (vel_cmd[name] - d->actuator_velocity[i]); // damping
   }
+
   command_mutex.unlock();
 }
 
@@ -141,13 +142,17 @@ int MuJoCoSimulator::simulateImpl(const std::string &model_xml) {
   mju_copy(d->qpos, m->key_qpos, m->nq);
 
   // Initialize buffers for ROS2-control.
-  pos_state.resize(m->nu);
-  vel_state.resize(m->nu);
-  eff_state.resize(m->nu);
-  pos_cmd.resize(m->nu);
-  vel_cmd.resize(m->nu);
-  stiff.resize(m->nu);
-  damp.resize(m->nu);
+  for (int i = 0; i < m->nq; ++i) {
+    // names is one big char array with multiple null terminated strings inside. Take the one that starts at the given address
+    std::string name = m->names + m->name_jntadr[i];;
+    pos_state[name] = 0.0;
+    vel_state[name] = 0.0;
+    eff_state[name] = 0.0;
+    pos_cmd[name] = 0.0;
+    vel_cmd[name] = 0.0;
+    damp[name] = 0.0;
+    stiff[name] = 0.0;
+  }
 
   // Start where we are
   syncStates();
@@ -219,21 +224,24 @@ int MuJoCoSimulator::simulateImpl(const std::string &model_xml) {
   return 0;
 }
 
-void MuJoCoSimulator::read(std::vector<double> &pos, std::vector<double> &vel,
-                           std::vector<double> &eff) {
+void MuJoCoSimulator::read(std::map<std::string, double> &pos, std::map<std::string, double> &vel,
+                           std::map<std::string, double> &eff) {
   // Realtime in ROS2-control is more important than fresh data exchange.
   if (state_mutex.try_lock()) {
-    pos = pos_state;
-    vel = vel_state;
-    eff = eff_state;
+    for (auto &it : pos) {
+      pos[it.first] = pos_state[it.first];
+      vel[it.first] = vel_state[it.first];
+      eff[it.first] = eff_state[it.first];
+    }
     state_mutex.unlock();
   }
 }
 
-void MuJoCoSimulator::write(const std::vector<double> &pos,
-                            const std::vector<double> &vel,
-                            const std::vector<double> &stiff,
-                            const std::vector<double> &damp) {
+void MuJoCoSimulator::write(const std::map<std::string, double> &pos,
+                            const std::map<std::string, double> &vel,
+                            const std::map<std::string, double> &stiff,
+                            const std::map<std::string, double> &damp
+                            ) {
   // Realtime in ROS2-control is more important than fresh data exchange.
   if (command_mutex.try_lock()) {
     pos_cmd = pos;
@@ -246,9 +254,10 @@ void MuJoCoSimulator::write(const std::vector<double> &pos,
 
 void MuJoCoSimulator::syncStates() {
   for (auto i = 0; i < m->nu; ++i) {
-    pos_state[i] = d->qpos[i];
-    vel_state[i] = d->actuator_velocity[i];
-    eff_state[i] = d->actuator_force[i];
+    std::string name = m->names + m->name_jntadr[i];;
+    pos_state[name] = d->qpos[i];
+    vel_state[name] = d->actuator_velocity[i];
+    eff_state[name] = d->actuator_force[i];
   }
 }
 

@@ -35,17 +35,17 @@ namespace bolt_mujoco_simulation {
 
     private:
       // Command buffers for the controllers
-      std::vector<double> m_position_commands;
-      std::vector<double> m_velocity_commands;
+      std::map<std::string, double> m_position_commands;
+      std::map<std::string, double> m_velocity_commands;
 
       // State buffers for the controllers
-      std::vector<double> m_positions;
-      std::vector<double> m_velocities;
-      std::vector<double> m_efforts;
+      std::map<std::string, double> m_positions;
+      std::map<std::string, double> m_velocities;
+      std::map<std::string, double> m_efforts;
 
       // Anydrive gains
-      std::vector<double> m_stiffness;
-      std::vector<double> m_damping;
+      std::map<std::string, double> m_stiffness;
+      std::map<std::string, double> m_damping;
 
       // Run MuJoCo's solver in a separate thread
       std::thread m_simulation;
