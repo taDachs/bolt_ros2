@@ -4,24 +4,17 @@
                 <!--   qpos="0.0 0.0 1.0 0.0 0.0 0.0 0.0 -->
                   <!-- Joint Order in Mujoco:
                      FL_HAA
-                     FL_HFA
+                     FL_HFE
                      FL_KFE
                      FR_HAA
-                     FR_HFA
+                     FR_HFE
                      FR_KFE
-                      Joint Order in ros2_control:
-                    UNKNOWN
-                    FL_HFA
-                    FL_KFE
-                    UNKNOWN
-                    FR_HFA
-                    FR_KFE
                   -->
                 <key name="initial_joint_positions" time="0"
                   qpos="
                   0.0
                   0.0
-                  0.5
+                  0.0
                   0.0
                   0.0
                   0.0

@@ -116,7 +116,7 @@ void MuJoCoSimulator::controlCBImpl([[maybe_unused]] const mjModel *m,
     // names is one big char array with multiple null terminated strings inside.
     // Take the one that starts at the given address
     std::string name = m->names + m->name_jntadr[i];
-    ;
+
     d->ctrl[i] =
         stiff[name] * (pos_cmd[name] - d->qpos[i]) +             // stiffness
         damp[name] * (vel_cmd[name] - d->actuator_velocity[i]);  // damping
@@ -217,7 +217,6 @@ int MuJoCoSimulator::simulateImpl(const std::string &model_xml, const std::strin
       state_mutex.lock();
       syncStates();
       state_mutex.unlock();
-      // std::cout << d->time << "\n";
     }
 
     // get framebuffer viewport
