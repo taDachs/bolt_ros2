@@ -12,8 +12,6 @@
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 
 namespace bolt_mujoco_simulation {
-  constexpr char HW_IF_STIFFNESS[] = "stiffness";
-  constexpr char HW_IF_DAMPING[] = "damping";
   class Simulator : public hardware_interface::SystemInterface 
   {
     public:
@@ -44,10 +42,6 @@ namespace bolt_mujoco_simulation {
       std::vector<double> m_positions;
       std::vector<double> m_velocities;
       std::vector<double> m_efforts;
-
-      // Anydrive gains
-      std::vector<double> m_stiffness;
-      std::vector<double> m_damping;
 
       // Run MuJoCo's solver in a separate thread
       std::thread m_simulation;

@@ -67,7 +67,7 @@ def generate_launch_description():
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        prefix="gdbserver localhost:3000",
+        # prefix="gdbserver localhost:3000",
         emulate_tty=True,
         parameters=[robot_controllers],
         output="both",
@@ -100,6 +100,6 @@ def generate_launch_description():
             control_node,
             joint_state_broadcaster_spawner,
             # gui,
-            # delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
+            delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
         ]
     )

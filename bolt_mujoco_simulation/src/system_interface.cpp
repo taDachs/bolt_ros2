@@ -46,14 +46,6 @@ Simulator::on_init(const hardware_interface::HardwareInfo &info) {
   m_velocity_commands.resize(info_.joints.size(), 0.0);
 
   // Default gains
-  m_stiffness.resize(info_.joints.size(), 0);
-  m_damping.resize(info_.joints.size(), 0);
-
-  // Initialize joint gains for the simulator
-  for (size_t i = 0; i < info_.joints.size(); ++i) {
-    m_stiffness[i] = std::stod(info_.joints[i].parameters.at("p"));
-    m_damping[i] = std::stod(info_.joints[i].parameters.at("d"));
-  }
 
   for (const hardware_interface::ComponentInfo &joint : info_.joints) {
     if (joint.command_interfaces.size() != 2) {
@@ -126,12 +118,6 @@ Simulator::export_command_interfaces() {
     command_interfaces.emplace_back(hardware_interface::CommandInterface(
         info_.joints[i].name, hardware_interface::HW_IF_VELOCITY,
         &m_velocity_commands[i]));
-    command_interfaces.emplace_back(hardware_interface::CommandInterface(
-        info_.joints[i].name, bolt_mujoco_simulation::HW_IF_STIFFNESS,
-        &m_stiffness[i]));
-    command_interfaces.emplace_back(hardware_interface::CommandInterface(
-        info_.joints[i].name, bolt_mujoco_simulation::HW_IF_DAMPING,
-        &m_damping[i]));
   }
 
   return command_interfaces;
@@ -157,21 +143,13 @@ Simulator::read([[maybe_unused]] const rclcpp::Time &time,
     m_position_commands = m_positions;
   }
 
-  // TODO: Reconnect the MuJoCo simulator once we have implemented joint control
-  // with
-  // - Gravity compensation
-  // - integral gains for steady state accuracy
-  m_positions = m_position_commands;
-  m_velocities = m_velocity_commands;
-
   return return_type::OK;
 }
 
 Simulator::return_type
 Simulator::write([[maybe_unused]] const rclcpp::Time &time,
                  [[maybe_unused]] const rclcpp::Duration &period) {
-  MuJoCoSimulator::getInstance().write(m_position_commands, m_velocity_commands,
-                                       m_stiffness, m_damping);
+  MuJoCoSimulator::getInstance().write(m_position_commands, m_velocity_commands);
   return return_type::OK;
 }
 } // namespace bolt_mujoco_simulation

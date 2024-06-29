@@ -1,51 +1,106 @@
 #include "bolt_mujoco_simulation/mujoco_simulator.hpp"
-#include <memory>
 #include <iostream>
+#include <memory>
 
 namespace bolt_mujoco_simulation {
 MuJoCoSimulator::MuJoCoSimulator() {}
 
-void MuJoCoSimulator::keyboardCB(GLFWwindow* window, int key, int scancode, int act, int mods)
-{
+void MuJoCoSimulator::keyboardCB(GLFWwindow *window, int key, int scancode,
+                                 int act, int mods) {
   getInstance().keyboardCBImpl(window, key, scancode, act, mods);
 }
 
-void MuJoCoSimulator::keyboardCBImpl(GLFWwindow* window, int key, int scancode, int act, int mods)
-{
+void MuJoCoSimulator::keyboardCBImpl(GLFWwindow *window, int key, int scancode,
+                                     int act, int mods) {
   (void)window;
   (void)scancode;
   (void)mods;
 
   // backspace: reset simulation
-  if (act == GLFW_PRESS && key == GLFW_KEY_BACKSPACE)
-  {
+  if (act == GLFW_PRESS && key == GLFW_KEY_BACKSPACE) {
     mj_resetData(m, d);
     mju_copy(d->qpos, m->key_qpos, m->nq); // initial states from xml
     mj_forward(m, d);
   }
 }
 
-void MuJoCoSimulator::mouseButtonCB(GLFWwindow* window, int button, int act, int mods)
-{
+void MuJoCoSimulator::mouseButtonCB(GLFWwindow *window, int button, int act,
+                                    int mods) {
   getInstance().mouseButtonCBImpl(window, button, act, mods);
 }
 
-void MuJoCoSimulator::mouseButtonCBImpl(GLFWwindow* window, int button, int act, int mods)
-{
+void MuJoCoSimulator::mouseButtonCBImpl(GLFWwindow *window, int button, int act,
+                                        int mods) {
   (void)button;
   (void)act;
   (void)mods;
 
   // update button state
-  button_left   = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
-  button_middle = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS);
-  button_right  = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS);
+  button_left =
+      (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
+  button_middle =
+      (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS);
+  button_right =
+      (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS);
 
   // update mouse position
   glfwGetCursorPos(window, &lastx, &lasty);
 }
 
+void MuJoCoSimulator::mouseMoveCB(GLFWwindow *window, double xpos,
+                                  double ypos) {
+  getInstance().mouseMoveCBImpl(window, xpos, ypos);
+}
 
+void MuJoCoSimulator::mouseMoveCBImpl(GLFWwindow *window, double xpos,
+                                      double ypos) {
+  // no buttons down: nothing to do
+  if (!button_left && !button_middle && !button_right) {
+    return;
+  }
+
+  // compute mouse displacement, save
+  double dx = xpos - lastx;
+  double dy = ypos - lasty;
+  lastx = xpos;
+  lasty = ypos;
+
+  // get current window size
+  int width, height;
+  glfwGetWindowSize(window, &width, &height);
+
+  // get shift key state
+  bool mod_shift = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+                    glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS);
+
+  // determine action based on mouse button
+  mjtMouse action;
+  if (button_right) {
+    action = mod_shift ? mjMOUSE_MOVE_H : mjMOUSE_MOVE_V;
+  } else if (button_left) {
+    action = mod_shift ? mjMOUSE_ROTATE_H : mjMOUSE_ROTATE_V;
+  } else {
+    action = mjMOUSE_ZOOM;
+  }
+
+  // move camera
+  mjv_moveCamera(m, action, dx / height, dy / height, &scn, &cam);
+}
+
+// scroll callback
+void MuJoCoSimulator::scrollCB(GLFWwindow *window, double xoffset,
+                               double yoffset) {
+  getInstance().scrollCBImpl(window, xoffset, yoffset);
+}
+
+void MuJoCoSimulator::scrollCBImpl(GLFWwindow *window, double xoffset,
+                                   double yoffset) {
+  (void)window;
+  (void)xoffset;
+
+  // emulate vertical mouse motion = 5% of window height
+  mjv_moveCamera(m, mjMOUSE_ZOOM, 0, -0.05 * yoffset, &scn, &cam);
+}
 
 void MuJoCoSimulator::controlCB(const mjModel *m, mjData *d) {
   getInstance().controlCBImpl(m, d);
@@ -57,9 +112,12 @@ void MuJoCoSimulator::controlCBImpl([[maybe_unused]] const mjModel *m,
 
   for (size_t i = 0; i < pos_cmd.size(); ++i) {
     // Joint-level impedance control
-    d->ctrl[i] = stiff[i] * (pos_cmd[i] - d->qpos[i]) +            // stiffness
-                 damp[i] * (vel_cmd[i] - d->actuator_velocity[i]); // damping
+    // d->ctrl[i] = stiff[i] * (pos_cmd[i] - d->qpos[i]) +            //
+    // stiffness
+    //              damp[i] * (vel_cmd[i] - d->actuator_velocity[i]); // damping
     // d->ctrl[i] = 0;
+    d->ctrl[i] = 100.0 * (pos_cmd[i] - d->qpos[i]) +
+                 0.1 * (vel_cmd[i] - d->actuator_velocity[i]);
   }
   command_mutex.unlock();
 }
@@ -91,8 +149,6 @@ int MuJoCoSimulator::simulateImpl(const std::string &model_xml) {
   eff_state.resize(m->nu);
   pos_cmd.resize(m->nu);
   vel_cmd.resize(m->nu);
-  stiff.resize(m->nu);
-  damp.resize(m->nu);
 
   // Start where we are
   syncStates();
@@ -119,10 +175,10 @@ int MuJoCoSimulator::simulateImpl(const std::string &model_xml) {
   mjr_makeContext(m, &con, mjFONTSCALE_150);
 
   // install GLFW mouse and keyboard callbacks
-  // glfwSetKeyCallback(window, keyboardCB);
-  // glfwSetMouseButtonCallback(window, mouseButtonCB);
-  // glfwSetCursorPosCallback(window, mouseMoveCB);
-  // glfwSetScrollCallback(window, scrollCB);
+  glfwSetKeyCallback(window, keyboardCB);
+  glfwSetMouseButtonCallback(window, mouseButtonCB);
+  glfwSetCursorPosCallback(window, mouseMoveCB);
+  glfwSetScrollCallback(window, scrollCB);
 
   // Connect our specific control input callback for MuJoCo's engine.
   mjcb_control = MuJoCoSimulator::controlCB;
@@ -136,7 +192,7 @@ int MuJoCoSimulator::simulateImpl(const std::string &model_xml) {
       state_mutex.lock();
       syncStates();
       state_mutex.unlock();
-      std::cout << d->time << "\n";
+      // std::cout << d->time << "\n";
     }
 
     // get framebuffer viewport
@@ -176,15 +232,11 @@ void MuJoCoSimulator::read(std::vector<double> &pos, std::vector<double> &vel,
 }
 
 void MuJoCoSimulator::write(const std::vector<double> &pos,
-                            const std::vector<double> &vel,
-                            const std::vector<double> &stiff,
-                            const std::vector<double> &damp) {
+                            const std::vector<double> &vel) {
   // Realtime in ROS2-control is more important than fresh data exchange.
   if (command_mutex.try_lock()) {
     pos_cmd = pos;
     vel_cmd = vel;
-    this->stiff = stiff;
-    this->damp = damp;
     command_mutex.unlock();
   }
 }

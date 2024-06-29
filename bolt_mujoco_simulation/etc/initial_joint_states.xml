@@ -1,0 +1,15 @@
+<joints>
+        <keyframe>
+                <!-- <key name="initial_joint_positions" time="0" -->
+                <!--   qpos="0.0 0.0 1.0 0.0 0.0 0.0 0.0 -->
+                <key name="initial_joint_positions" time="0"
+                  qpos="
+                  0.0
+                  0.0
+                  0.0
+                  0.0
+                  0.0
+                  0.0" />
+        </keyframe>
+</joints>
+
