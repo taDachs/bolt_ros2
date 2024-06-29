@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <robot name="bolt" xmlns:xacro="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface">
+  <xacro:arg name="sim" default="false" />
+
   <xacro:property name="color_name" value="grey" />
   <xacro:property name="color" value="0.8 0.8 0.8" />
   <xacro:property name="opacity" value="1.0" />
@@ -33,25 +35,20 @@
 
   <xacro:include filename="$(find bolt_description)/urdf/joint.xacro"/>
   <ros2_control name="bolt_mujoco_simulation" type="system">
-    <xacro:joint_interface name="FR_HAA" p="10" d="0.1" />
-    <xacro:joint_interface name="FR_HFA" p="10" d="0.1" />
-    <xacro:joint_interface name="FR_KFE" p="10" d="0.1" />
+    <xacro:joint_interface name="FR_HAA" p="500" d="0.1" />
+    <xacro:joint_interface name="FR_HFA" p="1" d="0.1" />
+    <xacro:joint_interface name="FR_KFE" p="1" d="0.1" />
     <!-- <xacro:joint_interface name="FR_ANKLE" p="10" d="0.1" /> -->
-    <xacro:joint_interface name="FL_HAA" p="10" d="0.1" />
-    <xacro:joint_interface name="FL_HFA" p="10" d="0.1" />
-    <xacro:joint_interface name="FL_KFE" p="10" d="0.1" />
+    <xacro:joint_interface name="FL_HAA" p="500" d="0.1" />
+    <xacro:joint_interface name="FL_HFA" p="1" d="0.1" />
+    <xacro:joint_interface name="FL_KFE" p="1" d="0.1" />
     <!-- <xacro:joint_interface name="FL_ANKLE" p="10" d="0.1" /> -->
-    <hardware>
-      <plugin>bolt_mujoco_simulation/Simulator</plugin>
-      <!-- <param name="mujoco_model">$(arg mujoco_model)</param> -->
-      <param name="mujoco_model">/home/ws/src/bolt_ros2/bolt_mujoco_simulation/etc/world.xml</param>
-    </hardware>
+    <xacro:if value="$(arg sim)">
+      <hardware>
+        <plugin>bolt_mujoco_simulation/Simulator</plugin>
+        <param name="mujoco_model">$(arg mujoco_model)</param>
+        <param name="mesh_directory">$(arg mesh_directory)</param>
+      </hardware>
+    </xacro:if>
   </ros2_control>
-
-  <mujoco>
-    <!-- TODO: fix this path -->
-    <compiler
-      meshdir="/home/ws/src/bolt_description/resource/meshes"
-      discardvisual="false" />
-  </mujoco>
 </robot>

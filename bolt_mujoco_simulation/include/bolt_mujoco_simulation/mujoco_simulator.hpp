@@ -68,8 +68,8 @@ class MuJoCoSimulator {
   void controlCBImpl(const mjModel *m, mjData *d);
 
   // Call this in a separate thread
-  static int simulate(const std::string &model_xml);
-  int simulateImpl(const std::string &model_xml);
+  static int simulate(const std::string &model_xml, const std::string &mesh_dir);
+  int simulateImpl(const std::string &model_xml, const std::string &mesh_dir);
 
   static void keyboardCB(GLFWwindow *window, int key, int scancode, int act,
                          int mods);

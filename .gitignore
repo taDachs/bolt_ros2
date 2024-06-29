@@ -5,3 +5,5 @@
 
 # CMAKE
 cmake-build-debug
+
+MUJOCO_LOG.TXT
