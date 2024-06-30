@@ -58,6 +58,8 @@ class MuJoCoSimulator {
   std::map<std::string, double> k_d;   // Derivative gain
   std::map<std::string, double> k_t;   // feedforward (torque) gain
 
+  int freeflyer_nq;
+
   // Safety guards for buffers
   std::mutex state_mutex;
   std::mutex command_mutex;

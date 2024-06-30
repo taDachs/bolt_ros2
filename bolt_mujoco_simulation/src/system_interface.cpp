@@ -40,7 +40,6 @@ Simulator::CallbackReturn Simulator::on_init(
     m_efforts[joint.name] = std::numeric_limits<double>::quiet_NaN();
     m_position_commands[joint.name] = std::numeric_limits<double>::quiet_NaN();
     m_velocity_commands[joint.name] = 0.0;
-    m_effort_commands[joint.name] = std::numeric_limits<double>::quiet_NaN();
     m_effort_commands[joint.name] = 0.0;
     m_k_p[joint.name] = std::stod(joint.parameters.at("p"));
     m_k_d[joint.name] = std::stod(joint.parameters.at("d"));

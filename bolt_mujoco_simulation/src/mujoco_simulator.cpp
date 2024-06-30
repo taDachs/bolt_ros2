@@ -112,15 +112,15 @@ void MuJoCoSimulator::controlCBImpl([[maybe_unused]] const mjModel *m,
                                     mjData *d) {
   command_mutex.lock();
 
-  for (int i = 0; i < m->nq; ++i) {
+  for (int i = 0; i < m->nu; ++i) {
     // names is one big char array with multiple null terminated strings inside.
     // Take the one that starts at the given address
-    std::string name = m->names + m->name_jntadr[i];
+    std::string name = m->names + m->name_actuatoradr[i];
 
     d->ctrl[i] =
-        k_p[name] * (pos_cmd[name] - d->qpos[i]) +             // stiffness
-        k_d[name] * (vel_cmd[name] - d->actuator_velocity[i]) +  // damping
-        k_t[name] * eff_cmd[name]; // feedforward torque
+        k_p[name] * (pos_cmd[name] - d->qpos[i + freeflyer_nq]) +
+        k_d[name] * (vel_cmd[name] - d->actuator_velocity[i]) +
+        k_t[name] * eff_cmd[name];
   }
 
   command_mutex.unlock();
@@ -161,12 +161,14 @@ int MuJoCoSimulator::simulateImpl(const std::string &model_xml, const std::strin
   d = mj_makeData(m);
   mju_copy(d->qpos, m->key_qpos, m->nq);
 
+  freeflyer_nq = m->nq - m->nu;
+
   // Initialize buffers for ROS2-control.
-  for (int i = 0; i < m->nq; ++i) {
+  for (int i = 0; i < m->nu; ++i) {
     // names is one big char array with multiple null terminated strings inside.
     // Take the one that starts at the given address
-    std::string name = m->names + m->name_jntadr[i];
-    ;
+    std::string name = m->names + m->name_actuatoradr[i];
+
     pos_state[name] = 0.0;
     vel_state[name] = 0.0;
     eff_state[name] = 0.0;
@@ -275,15 +277,16 @@ void MuJoCoSimulator::write(const std::map<std::string, double> &pos,
     this->k_p = k_p;
     this->k_d = k_d;
     this->k_d = k_t;
+
     command_mutex.unlock();
   }
 }
 
 void MuJoCoSimulator::syncStates() {
   for (auto i = 0; i < m->nu; ++i) {
-    std::string name = m->names + m->name_jntadr[i];
-    ;
-    pos_state[name] = d->qpos[i];
+    std::string name = m->names + m->name_actuatoradr[i];
+    
+    pos_state[name] = d->qpos[i + freeflyer_nq];
     vel_state[name] = d->actuator_velocity[i];
     eff_state[name] = d->actuator_force[i];
   }
