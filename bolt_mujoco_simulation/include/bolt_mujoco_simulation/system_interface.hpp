@@ -41,15 +41,17 @@ class Simulator : public hardware_interface::SystemInterface {
   // Command buffers for the controllers
   std::map<std::string, double> m_position_commands;
   std::map<std::string, double> m_velocity_commands;
+  std::map<std::string, double> m_effort_commands;
 
   // State buffers for the controllers
   std::map<std::string, double> m_positions;
   std::map<std::string, double> m_velocities;
   std::map<std::string, double> m_efforts;
 
-  // Anydrive gains
-  std::map<std::string, double> m_stiffness;
-  std::map<std::string, double> m_damping;
+  // gains
+  std::map<std::string, double> m_k_p;
+  std::map<std::string, double> m_k_d;
+  std::map<std::string, double> m_k_t;
 
   // Run MuJoCo's solver in a separate thread
   std::thread m_simulation;
