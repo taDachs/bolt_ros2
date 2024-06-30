@@ -1,4 +1,11 @@
 <include>
+  <default class="joint_damping">
+    <!-- The user parameter shall compensate all unmodelled real-world joint physics (gear box friction, motor inertia, lubrication, etc.).
+    It has been determined experimentally while matching the simulation to a recorded reference motion on the real hardware. -->
+    <!-- <joint user="0.0" frictionloss="0.3" damping="0.0" /> -->
+  </default>
+  <size njmax="500" nconmax="100" nuser_jnt="1" />
+
   <compiler angle="radian" meshdir="../../bolt_description/meshes/"/>
   <asset>
     <mesh name="bolt_body" file="bolt_body.stl"/>

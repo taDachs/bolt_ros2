@@ -13,13 +13,13 @@
       FL_HAA FL_HFE FL_KFE FR_HAA FR_HFE FR_KFE
     -->
     <key name="initial_joint_positions" time="0"
-      qpos="0.0 0.0 1.0 0.0 0.0 0.0 0.0
+      qpos="0.0 0.0 0.5 0.0 0.0 0.0 0.0
       0.0
+      0.5
+      -1.0
       0.0
-      0.0
-      0.0
-      0.0
-      0.0
+      0.5
+      -1.0
       " />
   </keyframe>
   <include file="contacts.xml"/>
