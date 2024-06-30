@@ -3,6 +3,7 @@ from launch.substitutions import (
     Command,
     FindExecutable,
     PathJoinSubstitution,
+    LaunchConfiguration,
 )
 from launch.actions import RegisterEventHandler
 from launch_ros.actions import Node
@@ -12,6 +13,9 @@ from launch.event_handlers import OnProcessExit
 
 
 def generate_launch_description():
+    # add a launch argument for what world file to pick, choice between unconstrained, sagittal and pole
+    world_file = LaunchConfiguration("world", default="world_unconstrained.xml")
+
     # Convert the xacro file to URDF
     robot_description_content = Command(
         [
@@ -32,7 +36,7 @@ def generate_launch_description():
                 [
                     FindPackageShare("bolt_mujoco_simulation"),
                     "etc",
-                    "world.xml",
+                    world_file,
                 ]
             ),
             " ",
