@@ -1,4 +1,4 @@
-<mujoco>
+<include>
   <actuator>
     <!-- TODO: maybe use correct gear ratio? -->
     <motor name="FL_HAA" gear="1" joint="FL_HAA"/>
@@ -10,4 +10,4 @@
     <motor name="FR_KFE" gear="1" joint="FR_KFE"/>
   </actuator>
 
-</mujoco>
+</include>

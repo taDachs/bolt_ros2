@@ -1,0 +1,6 @@
+<include>
+  <contact>
+    <pair name="left_leg_ground_contact" condim="6" geom1="floor" geom2="FL_FOOT_COLLISION" friction="1 1 0.005 0.0001 0.0001" />
+    <pair name="right_leg_ground_contact" condim="6" geom1="floor" geom2="FR_FOOT_COLLISION" friction="1 1 0.005 0.0001 0.0001" />
+  </contact>
+</include>

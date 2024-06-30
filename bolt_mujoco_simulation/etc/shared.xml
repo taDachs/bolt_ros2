@@ -1,4 +1,4 @@
-<mujoco>
+<include>
   <compiler angle="radian" meshdir="../../bolt_description/meshes/"/>
   <asset>
     <mesh name="bolt_body" file="bolt_body.stl"/>
@@ -13,4 +13,4 @@
     <texture builtin="checker" height="512" name="texplane" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" type="2d" width="512"/>
     <material name="floorplane" reflectance="0.5" texrepeat="1 1" texture="texplane" texuniform="true"/>
   </asset>
-</mujoco>
+</include>

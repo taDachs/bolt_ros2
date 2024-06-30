@@ -1,4 +1,4 @@
-<mujoco model="bolt">
+<mujoco>
   <include file="shared.xml"></include>
   <worldbody>
       <include file="floorplane.xml"></include>
@@ -6,4 +6,5 @@
   </worldbody>
   <include file="actuators.xml"></include>
   <include file="initial_joint_states.xml"/>
+  <include file="contacts.xml"/>
 </mujoco>
