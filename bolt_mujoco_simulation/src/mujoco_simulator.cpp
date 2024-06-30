@@ -118,8 +118,9 @@ void MuJoCoSimulator::controlCBImpl([[maybe_unused]] const mjModel *m,
     std::string name = m->names + m->name_jntadr[i];
 
     d->ctrl[i] =
-        stiff[name] * (pos_cmd[name] - d->qpos[i]) +             // stiffness
-        damp[name] * (vel_cmd[name] - d->actuator_velocity[i]);  // damping
+        k_p[name] * (pos_cmd[name] - d->qpos[i]) +             // stiffness
+        k_d[name] * (vel_cmd[name] - d->actuator_velocity[i]) +  // damping
+        k_t[name] * eff_cmd[name]; // feedforward torque
   }
 
   command_mutex.unlock();
@@ -171,8 +172,10 @@ int MuJoCoSimulator::simulateImpl(const std::string &model_xml, const std::strin
     eff_state[name] = 0.0;
     pos_cmd[name] = 0.0;
     vel_cmd[name] = 0.0;
-    damp[name] = 0.0;
-    stiff[name] = 0.0;
+    eff_cmd[name] = 0.0;
+    k_p[name] = 0.0;
+    k_d[name] = 0.0;
+    k_t[name] = 0.0;
   }
 
   // Start where we are
@@ -260,14 +263,18 @@ void MuJoCoSimulator::read(std::map<std::string, double> &pos,
 
 void MuJoCoSimulator::write(const std::map<std::string, double> &pos,
                             const std::map<std::string, double> &vel,
-                            const std::map<std::string, double> &stiff,
-                            const std::map<std::string, double> &damp) {
+                            const std::map<std::string, double> &eff,
+                            const std::map<std::string, double> &k_p,
+                            const std::map<std::string, double> &k_d,
+                            const std::map<std::string, double> &k_t) {
   // Realtime in ROS2-control is more important than fresh data exchange.
   if (command_mutex.try_lock()) {
     pos_cmd = pos;
     vel_cmd = vel;
-    this->stiff = stiff;
-    this->damp = damp;
+    eff_cmd = eff;
+    this->k_p = k_p;
+    this->k_d = k_d;
+    this->k_d = k_t;
     command_mutex.unlock();
   }
 }

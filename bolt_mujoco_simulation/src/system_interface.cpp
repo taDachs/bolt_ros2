@@ -40,12 +40,15 @@ Simulator::CallbackReturn Simulator::on_init(
     m_efforts[joint.name] = std::numeric_limits<double>::quiet_NaN();
     m_position_commands[joint.name] = std::numeric_limits<double>::quiet_NaN();
     m_velocity_commands[joint.name] = 0.0;
-    m_stiffness[joint.name] = std::stod(joint.parameters.at("p"));
-    m_damping[joint.name] = std::stod(joint.parameters.at("d"));
+    m_effort_commands[joint.name] = std::numeric_limits<double>::quiet_NaN();
+    m_effort_commands[joint.name] = 0.0;
+    m_k_p[joint.name] = std::stod(joint.parameters.at("p"));
+    m_k_d[joint.name] = std::stod(joint.parameters.at("d"));
+    m_k_t[joint.name] = std::stod(joint.parameters.at("t"));
 
-    if (joint.command_interfaces.size() != 2) {
+    if (joint.command_interfaces.size() != 3) {
       RCLCPP_ERROR(rclcpp::get_logger("Simulator"),
-                   "Joint '%s' needs two possible command interfaces.",
+                   "Joint '%s' needs three possible command interfaces.",
                    joint.name.c_str());
       return Simulator::CallbackReturn::ERROR;
     }
@@ -53,12 +56,14 @@ Simulator::CallbackReturn Simulator::on_init(
     if (!(joint.command_interfaces[0].name ==
               hardware_interface::HW_IF_POSITION ||
           joint.command_interfaces[1].name ==
-              hardware_interface::HW_IF_VELOCITY)) {
+              hardware_interface::HW_IF_VELOCITY ||
+          joint.command_interfaces[2].name ==
+              hardware_interface::HW_IF_EFFORT)) {
       RCLCPP_ERROR(rclcpp::get_logger("Simulator"),
                    "Joint '%s' needs the following command interfaces in that "
-                   "order: %s, %s.",
+                   "order: %s, %s, %s.",
                    joint.name.c_str(), hardware_interface::HW_IF_POSITION,
-                   hardware_interface::HW_IF_VELOCITY);
+                   hardware_interface::HW_IF_VELOCITY, hardware_interface::HW_IF_EFFORT);
       return Simulator::CallbackReturn::ERROR;
     }
 
@@ -113,6 +118,9 @@ Simulator::export_command_interfaces() {
     command_interfaces.emplace_back(hardware_interface::CommandInterface(
         joint.name, hardware_interface::HW_IF_VELOCITY,
         &m_velocity_commands[joint.name]));
+    command_interfaces.emplace_back(hardware_interface::CommandInterface(
+        joint.name, hardware_interface::HW_IF_EFFORT,
+        &m_effort_commands[joint.name]));
   }
 
   return command_interfaces;
@@ -144,8 +152,8 @@ Simulator::return_type Simulator::read(
 Simulator::return_type Simulator::write(
     [[maybe_unused]] const rclcpp::Time &time,
     [[maybe_unused]] const rclcpp::Duration &period) {
-  MuJoCoSimulator::getInstance().write(m_position_commands, m_velocity_commands,
-                                       m_stiffness, m_damping);
+  MuJoCoSimulator::getInstance().write(m_position_commands, m_velocity_commands, m_effort_commands,
+                                       m_k_p, m_k_d, m_k_t);
   return return_type::OK;
 }
 }  // namespace bolt_mujoco_simulation

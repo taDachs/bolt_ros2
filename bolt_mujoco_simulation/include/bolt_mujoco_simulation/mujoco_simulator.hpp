@@ -50,11 +50,13 @@ class MuJoCoSimulator {
   // Buffers for data exchange with ROS2-control
   std::map<std::string, double> pos_cmd;
   std::map<std::string, double> vel_cmd;
+  std::map<std::string, double> eff_cmd;
   std::map<std::string, double> pos_state;
   std::map<std::string, double> vel_state;
   std::map<std::string, double> eff_state;
-  std::map<std::string, double> stiff;  // Proportional gain
-  std::map<std::string, double> damp;   // Derivative gain
+  std::map<std::string, double> k_p;  // Proportional gain
+  std::map<std::string, double> k_d;   // Derivative gain
+  std::map<std::string, double> k_t;   // feedforward (torque) gain
 
   // Safety guards for buffers
   std::mutex state_mutex;
@@ -93,7 +95,9 @@ class MuJoCoSimulator {
             std::map<std::string, double> &eff);
   void write(const std::map<std::string, double> &pos,
              const std::map<std::string, double> &vel,
-             const std::map<std::string, double> &stiff,
-             const std::map<std::string, double> &damp);
+             const std::map<std::string, double> &eff,
+             const std::map<std::string, double> &k_p,
+             const std::map<std::string, double> &k_d,
+             const std::map<std::string, double> &k_t);
 };
 }  // namespace bolt_mujoco_simulation
