@@ -20,4 +20,5 @@
       " />
   </keyframe>
   <include file="contacts.xml"/>
+  <include file="sensors.xml"/>
 </mujoco>

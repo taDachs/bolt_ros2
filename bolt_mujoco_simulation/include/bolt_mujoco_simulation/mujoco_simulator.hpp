@@ -19,6 +19,11 @@ class MuJoCoSimulator {
   MuJoCoSimulator();
   void syncStates();
 
+  // Sensor IDs and similar
+  int sensor_orient_id;
+  int sensor_angular_vel_id;
+  int sensor_linear_acc_id;
+
  public:
   // Modern singleton approach
   MuJoCoSimulator(const MuJoCoSimulator &) = delete;
@@ -31,6 +36,12 @@ class MuJoCoSimulator {
     static MuJoCoSimulator simulator;
     return simulator;
   }
+
+  // Expected sensor names
+  constexpr static char NAME_GYRO[] = "gyro_sensor";
+  constexpr static char NAME_ACCEL[] = "accel_sensor";
+  constexpr static char NAME_ORIENT[] = "orient_sensor";
+
 
   // MuJoCo data structures
   mjModel *m = NULL;  // MuJoCo model
@@ -57,6 +68,11 @@ class MuJoCoSimulator {
   std::map<std::string, double> k_p;  // Proportional gain
   std::map<std::string, double> k_d;   // Derivative gain
   std::map<std::string, double> k_t;   // feedforward (torque) gain
+
+  // an array of doubles seemed better than using an opengl vector tuple
+  std::array<double, 4> sensor_orientation = {0.0, 0.0, 0.0, 0.0}; // Quaternion
+  std::array<double, 4> sensor_angular_vel = {0.0, 0.0, 0.0};
+  std::array<double, 4> sensor_linear_acc = {0.0, 0.0, 0.0};
 
   int freeflyer_nq;
 
