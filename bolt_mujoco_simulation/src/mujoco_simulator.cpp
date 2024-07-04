@@ -157,6 +157,31 @@ int MuJoCoSimulator::simulateImpl(const std::string &model_xml, const std::strin
     return 1;
   }
 
+  // Sensor IDs
+  sensor_orient_id = -1;
+  sensor_angular_vel_id = -1;
+  sensor_linear_acc_id = -1;
+
+
+  for (int i_sensor = 0; i_sensor < m->nsensor; ++i_sensor) {
+    char* sensor_name = m->names + m->name_sensoradr[i_sensor];
+
+    if (strcmp(NAME_GYRO, sensor_name) == 0) {
+      sensor_angular_vel_id = i_sensor;
+    } else if (strcmp(NAME_ACCEL, sensor_name) == 0) {
+      sensor_linear_acc_id = i_sensor;
+    } else if (strcmp(NAME_ORIENT, sensor_name) == 0) {
+      sensor_orient_id = i_sensor;
+    }
+  }
+
+  if (sensor_orient_id == -1
+      || sensor_angular_vel_id == -1
+      || sensor_linear_acc_id == -1) {
+    mju_error("Load model error: Sensors seem to be missing or are misconfigured.");
+    return 1;
+  }
+
   // Set initial state with the keyframe mechanism from xml
   d = mj_makeData(m);
   mju_copy(d->qpos, m->key_qpos, m->nq);
@@ -179,6 +204,10 @@ int MuJoCoSimulator::simulateImpl(const std::string &model_xml, const std::strin
     k_d[name] = 0.0;
     k_t[name] = 0.0;
   }
+
+  sensor_orientation = {0.0, 0.0, 0.0, 0.0};
+  sensor_angular_vel = {0.0, 0.0, 0.0};
+  sensor_linear_acc = {0.0, 0.0, 0.0};
 
   // Start where we are
   syncStates();
@@ -222,6 +251,20 @@ int MuJoCoSimulator::simulateImpl(const std::string &model_xml, const std::strin
       state_mutex.lock();
       syncStates();
       state_mutex.unlock();
+
+      // Rudimentary printing of sensor data
+      std::cout << "\n\nData from sensors:\n";
+      for (int i_sensor = 0; i_sensor < m->nsensor; ++i_sensor) {
+        std::cout << "  " << m->names + m->name_sensoradr[i_sensor] << ":\n";
+
+        const auto dim = m->sensor_dim[i_sensor];
+
+        for(int i = m->sensor_adr[i_sensor]; i < m->sensor_adr[i_sensor] + dim; ++i){
+          std::cout << "    " << d->sensordata[i];
+        }
+
+        std::cout << "\n";
+      }
     }
 
     // get framebuffer viewport
@@ -290,6 +333,27 @@ void MuJoCoSimulator::syncStates() {
     vel_state[name] = d->actuator_velocity[i];
     eff_state[name] = d->actuator_force[i];
   }
+
+  // sensor_data
+  const int i_orient_offset = m->sensor_adr[sensor_orient_id];
+  sensor_orientation = {
+    d->sensordata[i_orient_offset],
+    d->sensordata[i_orient_offset+1],
+    d->sensordata[i_orient_offset+2],
+    d->sensordata[i_orient_offset+3],
+  };
+  const int i_ang_vel_offset = m->sensor_adr[sensor_angular_vel_id];
+  sensor_angular_vel = {
+    d->sensordata[i_ang_vel_offset],
+    d->sensordata[i_ang_vel_offset + 1],
+    d->sensordata[i_ang_vel_offset + 2]
+  };
+  const int i_lin_acc_offset = m->sensor_adr[sensor_linear_acc_id];
+  sensor_linear_acc = {
+    d->sensordata[i_lin_acc_offset],
+    d->sensordata[i_lin_acc_offset + 1],
+    d->sensordata[i_lin_acc_offset + 2]
+  };
 }
 
 }  // namespace bolt_mujoco_simulation
