@@ -11,7 +11,9 @@
   <link name="base_link"/>
   <xacro:include filename="body.xacro"/>
   <xacro:include filename="leg.xacro"/>
+  <xacro:include filename="sensor.xacro"/>
   <xacro:body />
+  <xacro:sensor />
   <xacro:leg
     prefix="FL"
     is_front="true"
