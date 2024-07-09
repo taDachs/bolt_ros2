@@ -76,8 +76,8 @@ class MuJoCoSimulator {
 
   // an array of doubles seemed better than using an opengl vector tuple
   std::array<double, 4> sensor_orientation = {0.0, 0.0, 0.0, 0.0}; // Quaternion
-  std::array<double, 4> sensor_angular_vel = {0.0, 0.0, 0.0};
-  std::array<double, 4> sensor_linear_acc = {0.0, 0.0, 0.0};
+  std::array<double, 3> sensor_angular_vel = {0.0, 0.0, 0.0};
+  std::array<double, 3> sensor_linear_acc = {0.0, 0.0, 0.0};
 
   int freeflyer_nq;
 
