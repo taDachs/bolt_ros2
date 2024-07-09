@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" name="bolt">
-  <xacro:macro name="sensor">
-    <joint name="sensor_joint" type="fixed">
+  <xacro:macro name="sensor" params="link_name">
+    <joint name="${link_name}_joint" type="fixed">
       <parent link="base_link"/>
-      <child link="sensor_link"/>
+      <child link="${link_name}"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <axis xyz="0 0 1"/>
     </joint>
-    <link name="sensor_link">
+    <link name="${link_name}">
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0" />
         <mass value="0.0"/>

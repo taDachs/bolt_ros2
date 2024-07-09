@@ -43,7 +43,7 @@ class MuJoCoSimulator {
   }
 
   // Expected sensor link name
-  constexpr static char NAME_SENSOR_LINK[] = "sensor_link";
+  constexpr static char NAME_SENSOR_IMU_LINK[] = "imu_link";
 
   // Expected sensor names
   constexpr static char NAME_GYRO[] = "gyro_sensor";

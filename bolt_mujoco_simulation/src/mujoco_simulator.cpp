@@ -357,7 +357,7 @@ void MuJoCoSimulator::syncStates() {
 void MuJoCoSimulator::publishImuData() {
   auto now = node->get_clock()->now();
   sensor_msgs::msg::Imu msg;
-  msg.header.frame_id = NAME_SENSOR_LINK;
+  msg.header.frame_id = NAME_SENSOR_IMU_LINK;
   msg.header.stamp.sec = now.seconds();
   msg.header.stamp.nanosec = now.nanoseconds();
 
