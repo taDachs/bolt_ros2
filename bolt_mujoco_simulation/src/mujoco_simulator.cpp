@@ -355,7 +355,12 @@ void MuJoCoSimulator::syncStates() {
 }
 
 void MuJoCoSimulator::publishImuData() {
-  auto msg = sensor_msgs::msg::Imu();
+  auto now = node->get_clock()->now();
+  sensor_msgs::msg::Imu msg;
+  msg.header.frame_id = NAME_SENSOR_LINK;
+  msg.header.stamp.sec = now.seconds();
+  msg.header.stamp.nanosec = now.nanoseconds();
+
   msg.angular_velocity.x = d->sensordata[sensor_angular_vel_offset];
   msg.angular_velocity.y = d->sensordata[sensor_angular_vel_offset + 1];
   msg.angular_velocity.z = d->sensordata[sensor_angular_vel_offset + 2];
