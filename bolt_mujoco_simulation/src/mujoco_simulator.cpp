@@ -3,6 +3,9 @@
 #include <filesystem>
 #include <iostream>
 #include <memory>
+#include <thread>
+
+#include <sensor_msgs/msg/imu.hpp>
 
 namespace bolt_mujoco_simulation {
 MuJoCoSimulator::MuJoCoSimulator() {}
@@ -158,29 +161,39 @@ int MuJoCoSimulator::simulateImpl(const std::string &model_xml, const std::strin
   }
 
   // Sensor IDs
-  sensor_orient_id = -1;
-  sensor_angular_vel_id = -1;
-  sensor_linear_acc_id = -1;
+  sensor_orient_offset = -1;
+  sensor_angular_vel_offset = -1;
+  sensor_linear_acc_offset = -1;
 
 
   for (int i_sensor = 0; i_sensor < m->nsensor; ++i_sensor) {
     char* sensor_name = m->names + m->name_sensoradr[i_sensor];
 
     if (strcmp(NAME_GYRO, sensor_name) == 0) {
-      sensor_angular_vel_id = i_sensor;
+      sensor_angular_vel_offset = m->sensor_adr[i_sensor];
     } else if (strcmp(NAME_ACCEL, sensor_name) == 0) {
-      sensor_linear_acc_id = i_sensor;
+      sensor_linear_acc_offset = m->sensor_adr[i_sensor];
     } else if (strcmp(NAME_ORIENT, sensor_name) == 0) {
-      sensor_orient_id = i_sensor;
+      sensor_orient_offset = m->sensor_adr[i_sensor];
     }
   }
 
-  if (sensor_orient_id == -1
-      || sensor_angular_vel_id == -1
-      || sensor_linear_acc_id == -1) {
+  if (sensor_orient_offset == -1
+      || sensor_angular_vel_offset == -1
+      || sensor_linear_acc_offset == -1) {
     mju_error("Load model error: Sensors seem to be missing or are misconfigured.");
     return 1;
   }
+
+  // a depth of 0 seems to let it revert back to "system defaults", whatever that means
+  // maybe we should set it to 1, if we have no need for any kind of history
+  const size_t imu_qos_history_depth = 1;
+  sensor_imu_publisher = node->create_publisher<sensor_msgs::msg::Imu>("imu", imu_qos_history_depth);
+
+  // or something else other than 60HZ
+  const std::chrono::milliseconds imu_publishing_speed(1000 / 60);
+  auto sensor_imu_timer = node->create_wall_timer(imu_publishing_speed,
+                                                  std::bind(&MuJoCoSimulator::publishImuData, this));
 
   // Set initial state with the keyframe mechanism from xml
   d = mj_makeData(m);
@@ -242,6 +255,8 @@ int MuJoCoSimulator::simulateImpl(const std::string &model_xml, const std::strin
   // Connect our specific control input callback for MuJoCo's engine.
   mjcb_control = MuJoCoSimulator::controlCB;
 
+  std::thread imu_publisher_thread([this](){rclcpp::spin(node);});
+
   while (!glfwWindowShouldClose(window)) {
     mjtNum simstart = d->time;
     while (d->time - simstart < 1.0 / 60.0) {
@@ -251,20 +266,6 @@ int MuJoCoSimulator::simulateImpl(const std::string &model_xml, const std::strin
       state_mutex.lock();
       syncStates();
       state_mutex.unlock();
-
-      // Rudimentary printing of sensor data
-      std::cout << "\n\nData from sensors:\n";
-      for (int i_sensor = 0; i_sensor < m->nsensor; ++i_sensor) {
-        std::cout << "  " << m->names + m->name_sensoradr[i_sensor] << ":\n";
-
-        const auto dim = m->sensor_dim[i_sensor];
-
-        for(int i = m->sensor_adr[i_sensor]; i < m->sensor_adr[i_sensor] + dim; ++i){
-          std::cout << "    " << d->sensordata[i];
-        }
-
-        std::cout << "\n";
-      }
     }
 
     // get framebuffer viewport
@@ -328,32 +329,44 @@ void MuJoCoSimulator::write(const std::map<std::string, double> &pos,
 void MuJoCoSimulator::syncStates() {
   for (auto i = 0; i < m->nu; ++i) {
     std::string name = m->names + m->name_actuatoradr[i];
-    
+
     pos_state[name] = d->qpos[i + freeflyer_nq];
     vel_state[name] = d->actuator_velocity[i];
     eff_state[name] = d->actuator_force[i];
   }
 
   // sensor_data
-  const int i_orient_offset = m->sensor_adr[sensor_orient_id];
   sensor_orientation = {
-    d->sensordata[i_orient_offset],
-    d->sensordata[i_orient_offset+1],
-    d->sensordata[i_orient_offset+2],
-    d->sensordata[i_orient_offset+3],
+    d->sensordata[sensor_orient_offset],
+    d->sensordata[sensor_orient_offset + 1],
+    d->sensordata[sensor_orient_offset + 2],
+    d->sensordata[sensor_orient_offset + 3],
   };
-  const int i_ang_vel_offset = m->sensor_adr[sensor_angular_vel_id];
   sensor_angular_vel = {
-    d->sensordata[i_ang_vel_offset],
-    d->sensordata[i_ang_vel_offset + 1],
-    d->sensordata[i_ang_vel_offset + 2]
+    d->sensordata[sensor_angular_vel_offset],
+    d->sensordata[sensor_angular_vel_offset + 1],
+    d->sensordata[sensor_angular_vel_offset + 2]
   };
-  const int i_lin_acc_offset = m->sensor_adr[sensor_linear_acc_id];
   sensor_linear_acc = {
-    d->sensordata[i_lin_acc_offset],
-    d->sensordata[i_lin_acc_offset + 1],
-    d->sensordata[i_lin_acc_offset + 2]
+    d->sensordata[sensor_linear_acc_offset],
+    d->sensordata[sensor_linear_acc_offset + 1],
+    d->sensordata[sensor_linear_acc_offset + 2]
   };
 }
 
+void MuJoCoSimulator::publishImuData() {
+  auto msg = sensor_msgs::msg::Imu();
+  msg.angular_velocity.x = d->sensordata[sensor_angular_vel_offset];
+  msg.angular_velocity.y = d->sensordata[sensor_angular_vel_offset + 1];
+  msg.angular_velocity.z = d->sensordata[sensor_angular_vel_offset + 2];
+  msg.linear_acceleration.x = d->sensordata[sensor_linear_acc_offset];
+  msg.linear_acceleration.y = d->sensordata[sensor_linear_acc_offset + 1];
+  msg.linear_acceleration.z = d->sensordata[sensor_linear_acc_offset + 2];
+  msg.orientation.w = d->sensordata[sensor_orient_offset];
+  msg.orientation.x = d->sensordata[sensor_orient_offset + 1];
+  msg.orientation.y = d->sensordata[sensor_orient_offset + 2];
+  msg.orientation.z = d->sensordata[sensor_orient_offset + 3];
+
+  sensor_imu_publisher->publish(msg);
+}
 }  // namespace bolt_mujoco_simulation

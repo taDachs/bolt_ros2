@@ -12,17 +12,22 @@
 #include <string>
 #include <vector>
 
+#include <sensor_msgs/msg/imu.hpp>
+
 namespace bolt_mujoco_simulation {
 
 class MuJoCoSimulator {
  private:
   MuJoCoSimulator();
   void syncStates();
+  void publishImuData();
 
-  // Sensor IDs and similar
-  int sensor_orient_id;
-  int sensor_angular_vel_id;
-  int sensor_linear_acc_id;
+  // Sensordata offsets and similar
+  int sensor_orient_offset;
+  int sensor_angular_vel_offset;
+  int sensor_linear_acc_offset;
+
+  std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::Imu>> sensor_imu_publisher;
 
  public:
   // Modern singleton approach
