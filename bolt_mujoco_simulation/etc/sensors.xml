@@ -1,7 +1,7 @@
 <include>
   <sensor>
-    <gyro name="gyro_sensor" site="sensor_site"/>
-    <accelerometer name="accel_sensor" site="sensor_site"/>
-    <framequat name="orient_sensor" objtype="site" objname="sensor_site"/>
+    <gyro name="gyro_sensor" site="imu_site"/>
+    <accelerometer name="accel_sensor" site="imu_site"/>
+    <framequat name="orient_sensor" objtype="site" objname="imu_site"/>
   </sensor>
 </include>

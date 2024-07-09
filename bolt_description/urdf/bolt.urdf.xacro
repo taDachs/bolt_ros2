@@ -13,7 +13,8 @@
   <xacro:include filename="leg.xacro"/>
   <xacro:include filename="sensor.xacro"/>
   <xacro:body />
-  <xacro:sensor />
+  <xacro:sensor
+    link_name="imu_link"/>
   <xacro:leg
     prefix="FL"
     is_front="true"
