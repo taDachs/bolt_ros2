@@ -9,6 +9,7 @@ find_package(ament_cmake REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)
@@ -82,6 +83,7 @@ target_include_directories(mujoco_simulator PUBLIC
 
 ament_target_dependencies(mujoco_simulator PUBLIC
   rclcpp
+  sensor_msgs
 )
 
 # X11 OpenGL: link with libmujoco210.so, libglew.so, libGL.so
