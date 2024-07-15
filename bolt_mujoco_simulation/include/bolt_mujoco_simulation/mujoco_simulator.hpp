@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <random>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <vector>
@@ -21,6 +22,12 @@ class MuJoCoSimulator {
   MuJoCoSimulator();
   void syncStates();
   void publishImuData();
+  double computeNoise();
+
+  // "Noise Maker"
+  std::mt19937 random_engine;
+  std::normal_distribution<double> normal_dist;
+
 
   // Sensordata offsets and similar
   int sensor_orient_offset;
@@ -50,6 +57,8 @@ class MuJoCoSimulator {
   constexpr static char NAME_ACCEL[] = "accel_sensor";
   constexpr static char NAME_ORIENT[] = "orient_sensor";
 
+  // Enabling sensor noise
+  bool enable_noise = true;
 
   // MuJoCo data structures
   mjModel *m = NULL;  // MuJoCo model
@@ -114,6 +123,11 @@ class MuJoCoSimulator {
   // Scroll callback
   static void scrollCB(GLFWwindow *window, double xoffset, double yoffset);
   void scrollCBImpl(GLFWwindow *window, double xoffset, double yoffset);
+
+  // Fully sets random engine with new parameters,
+  // does NOT change enable_noise though!
+  // The noise will be from a normal distribution.
+  void setNoiseParams(double mean, double dev);
 
   // Non-blocking
   void read(std::map<std::string, double> &pos,
