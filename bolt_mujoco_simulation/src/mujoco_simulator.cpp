@@ -3,12 +3,18 @@
 #include <filesystem>
 #include <iostream>
 #include <memory>
+#include <random>
 #include <thread>
 
 #include <sensor_msgs/msg/imu.hpp>
 
 namespace bolt_mujoco_simulation {
-MuJoCoSimulator::MuJoCoSimulator() {}
+MuJoCoSimulator::MuJoCoSimulator() {
+  // Ensuring that our normal_dist and random_engine are
+  // never undefined, such that setting normal_dist parameters
+  // is possible before calling the simulate method.
+  setNoiseParams(0.0, 0.0);
+}
 
 void MuJoCoSimulator::keyboardCB(GLFWwindow *window, int key, int scancode,
                                  int act, int mods) {
@@ -354,6 +360,20 @@ void MuJoCoSimulator::syncStates() {
   };
 }
 
+void MuJoCoSimulator::setNoiseParams(double mean, double dev) {
+  std::random_device rd;
+  random_engine = std::mt19937(rd());
+  normal_dist = std::normal_distribution<double>(mean, dev);
+}
+
+double MuJoCoSimulator::computeNoise() {
+  if (!enable_noise) {
+    return 0.0;
+  }
+
+  return normal_dist(random_engine);
+}
+
 void MuJoCoSimulator::publishImuData() {
   auto now = node->get_clock()->now();
   sensor_msgs::msg::Imu msg;
@@ -361,16 +381,16 @@ void MuJoCoSimulator::publishImuData() {
   msg.header.stamp.sec = now.seconds();
   msg.header.stamp.nanosec = now.nanoseconds();
 
-  msg.angular_velocity.x = d->sensordata[sensor_angular_vel_offset];
-  msg.angular_velocity.y = d->sensordata[sensor_angular_vel_offset + 1];
-  msg.angular_velocity.z = d->sensordata[sensor_angular_vel_offset + 2];
-  msg.linear_acceleration.x = d->sensordata[sensor_linear_acc_offset];
-  msg.linear_acceleration.y = d->sensordata[sensor_linear_acc_offset + 1];
-  msg.linear_acceleration.z = d->sensordata[sensor_linear_acc_offset + 2];
-  msg.orientation.w = d->sensordata[sensor_orient_offset];
-  msg.orientation.x = d->sensordata[sensor_orient_offset + 1];
-  msg.orientation.y = d->sensordata[sensor_orient_offset + 2];
-  msg.orientation.z = d->sensordata[sensor_orient_offset + 3];
+  msg.angular_velocity.x = computeNoise() + d->sensordata[sensor_angular_vel_offset];
+  msg.angular_velocity.y = computeNoise() + d->sensordata[sensor_angular_vel_offset + 1];
+  msg.angular_velocity.z = computeNoise() + d->sensordata[sensor_angular_vel_offset + 2];
+  msg.linear_acceleration.x = computeNoise() + d->sensordata[sensor_linear_acc_offset];
+  msg.linear_acceleration.y = computeNoise() + d->sensordata[sensor_linear_acc_offset + 1];
+  msg.linear_acceleration.z = computeNoise() + d->sensordata[sensor_linear_acc_offset + 2];
+  msg.orientation.w = computeNoise() + d->sensordata[sensor_orient_offset];
+  msg.orientation.x = computeNoise() + d->sensordata[sensor_orient_offset + 1];
+  msg.orientation.y = computeNoise() + d->sensordata[sensor_orient_offset + 2];
+  msg.orientation.z = computeNoise() + d->sensordata[sensor_orient_offset + 3];
 
   sensor_imu_publisher->publish(msg);
 }
